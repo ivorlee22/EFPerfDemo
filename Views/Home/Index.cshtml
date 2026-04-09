@@ -7,8 +7,8 @@
         new { Action="Pagination",         Icon="fas fa-file",        Title="Missing Pagination",      Desc="Fetching all rows vs Skip/Take with page size",                Category="Data Volume",     Bad="All rows",      Good="10 rows/page"  },
         new { Action="Tracking",           Icon="fas fa-magnifying-glass", Title="Tracking vs NoTracking",  Desc="ChangeTracker overhead on read-only screens",                  Category="Memory & CPU",    Bad="Full snapshot", Good="No overhead"   },
         new { Action="CartesianExplosion", Icon="fas fa-explosion",   Title="Cartesian Explosion",     Desc="Multiple collection Includes multiply result-set rows",         Category="Query Shape",     Bad="N×M rows",      Good="Split queries" },
-        new { Action="CountVsAny",         Icon="fas fa-bullseye",    Title="Count() > 0  vs  Any()", Desc="Full table scan to check existence vs EXISTS short-circuit",    Category="Existence Check", Bad="Full scan",     Good="SELECT TOP 1"  },
-        new { Action="CustomQuery",        Icon="fas fa-code",        Title="Custom Optimized Query",  Desc="Writing tailored SQL or efficient LINQ instead of generic fetches", Category="Custom Query",    Bad="Generic fetch", Good="Hand‑crafted query" }
+        new { Action="CountVsAny",         Icon="fas fa-bullseye",    Title="Count() > 0  vs  Any()", Desc="Full table scan to check existence vs EXISTS short-circuit",    Category="Existence Check", Bad="Full scan",     Good="SELECT TOP 1"  }
+        // new { Action="CustomQuery",        Icon="fas fa-code",        Title="Custom Optimized Query",  Desc="Writing tailored SQL or efficient LINQ instead of generic fetches", Category="Custom Query",    Bad="Generic fetch", Good="Hand‑crafted query" }
     };
 }
 

@@ -34,7 +34,7 @@ public class BenchmarkService(
     // ─── 1. N+1 Query Problem ─────────────────────────────────────────────
     public async Task<ComparisonViewModel> NplusOne(bool skipBenchmark = false, bool onlyPain = false, bool onlySolution = false)
     {
-        _counter.Reset();
+
         var methodSw = Stopwatch.StartNew();
 
         long badMs = 0, badMem = 0, goodMs = 0, goodMem = 0;
@@ -43,6 +43,7 @@ public class BenchmarkService(
 
         using var dbCount = factory.CreateDbContext();
         totalOrders = await dbCount.Orders.CountAsync();
+        _counter.Reset();
 
         if (!skipBenchmark)
         {
@@ -153,22 +154,6 @@ var orders = _db.Orders
             SolutionExplanation = ".Include() + AsNoTracking() generates one efficient JOIN and skips change tracking."
         };
 
-        // Sample data
-        using var dbSample = factory.CreateDbContext();
-        var sample = await dbSample.Orders
-            .Include(o => o.Customer)
-            .AsNoTracking()
-            .Take(10)
-            .Select(o => new OrderDto
-            {
-                OrderId = o.Id,
-                Total = o.Total,
-                CustomerName = o.Customer.Name,
-                CustomerCity = o.Customer.City,
-                OrderDate = o.OrderDate,
-                Status = o.Status
-            }).ToListAsync();
-
         methodSw.Stop();
         LogMethodSummary(nameof(NplusOne), methodSw);
 
@@ -178,19 +163,19 @@ var orders = _db.Orders
             Category = "Query Loading",
             PainPoint = pain,
             Solution = solution,
-            SampleData = sample
         };
     }
 
     // ─── 2. Select * vs Projection ────────────────────────────────────────
     public async Task<ComparisonViewModel> SelectStar(bool skipBenchmark = false, bool onlyPain = false, bool onlySolution = false)
     {
-        _counter.Reset();
         var methodSw = Stopwatch.StartNew();
 
         long badMs = 0, badMem = 0, goodMs = 0, goodMem = 0;
         using var db1 = factory.CreateDbContext();
         int total = await db1.Orders.CountAsync();
+        _counter.Reset();
+
 
         if (!skipBenchmark)
         {
@@ -263,18 +248,6 @@ var orders = _db.Orders
         };
 
         using var dbSample = factory.CreateDbContext();
-        var sample = await dbSample.Orders
-            .AsNoTracking()
-            .Take(10)
-            .Select(o => new OrderDto
-            {
-                OrderId = o.Id,
-                Total = o.Total,
-                CustomerName = o.Customer.Name,
-                CustomerCity = o.Customer.City,
-                OrderDate = o.OrderDate,
-                Status = o.Status
-            }).ToListAsync();
 
         methodSw.Stop();
         LogMethodSummary(nameof(SelectStar), methodSw);
@@ -285,18 +258,18 @@ var orders = _db.Orders
             Category = "Data Transfer",
             PainPoint = pain,
             Solution = solution,
-            SampleData = sample
         };
     }
 
     // ─── 3. No Pagination ─────────────────────────────────────────────────
     public async Task<ComparisonViewModel> Pagination(bool skipBenchmark = false, bool onlyPain = false, bool onlySolution = false)
     {
-        _counter.Reset();
         var methodSw = Stopwatch.StartNew();
 
         using var db0 = factory.CreateDbContext();
         int total = await db0.Orders.CountAsync();
+        _counter.Reset();
+
 
         long badMs = 0, badMem = 0, goodMs = 0, goodMem = 0;
 
@@ -370,12 +343,6 @@ var orders = _db.Orders
         };
 
         using var dbSample = factory.CreateDbContext();
-        var sample = await dbSample.Orders
-            .AsNoTracking()
-            .OrderBy(o => o.Id)
-            .Take(10)
-            .Select(o => new OrderDto { OrderId = o.Id, Total = o.Total, Status = o.Status, OrderDate = o.OrderDate })
-            .ToListAsync();
 
         methodSw.Stop();
         LogMethodSummary(nameof(Pagination), methodSw);
@@ -386,18 +353,18 @@ var orders = _db.Orders
             Category = "Data Volume",
             PainPoint = pain,
             Solution = solution,
-            SampleData = sample
         };
     }
 
     // ─── 4. Tracking vs AsNoTracking ─────────────────────────────────────
     public async Task<ComparisonViewModel> Tracking(bool skipBenchmark = false, bool onlyPain = false, bool onlySolution = false)
     {
-        _counter.Reset();
         var methodSw = Stopwatch.StartNew();
 
         using var db0 = factory.CreateDbContext();
         int total = await db0.Orders.CountAsync();
+        _counter.Reset();
+
 
         long badMs = 0, badMem = 0, goodMs = 0, goodMem = 0;
 
@@ -461,12 +428,6 @@ var orders = _db.Orders
         };
 
         using var dbSample = factory.CreateDbContext();
-        var sample = await dbSample.Orders
-            .Include(o => o.Customer)
-            .AsNoTracking()
-            .Take(10)
-            .Select(o => new OrderDto { OrderId = o.Id, Total = o.Total, CustomerName = o.Customer.Name, OrderDate = o.OrderDate, Status = o.Status })
-            .ToListAsync();
 
         methodSw.Stop();
         LogMethodSummary(nameof(Tracking), methodSw);
@@ -477,18 +438,18 @@ var orders = _db.Orders
             Category = "Memory & CPU",
             PainPoint = pain,
             Solution = solution,
-            SampleData = sample
         };
     }
 
     // ─── 5. Cartesian Explosion ───────────────────────────────────────────
     public async Task<ComparisonViewModel> CartesianExplosion(bool skipBenchmark = false, bool onlyPain = false, bool onlySolution = false)
     {
-        _counter.Reset();
         var methodSw = Stopwatch.StartNew();
 
         using var db0 = factory.CreateDbContext();
         int orderCount = await db0.Orders.CountAsync();
+
+        _counter.Reset();
 
         long badMs = 0, badMem = 0, goodMs = 0, goodMem = 0;
 
@@ -566,21 +527,6 @@ var orders = _db.Orders
         };
 
         using var dbSample = factory.CreateDbContext();
-        var sample = await dbSample.Orders
-            .Include(o => o.Customer)
-            .Include(o => o.Items)
-            .AsSplitQuery()
-            .AsNoTracking()
-            .Take(10)
-            .Select(o => new OrderDto
-            {
-                OrderId = o.Id,
-                Total = o.Total,
-                CustomerName = o.Customer.Name,
-                ItemCount = o.Items.Count,
-                OrderDate = o.OrderDate,
-                Status = o.Status
-            }).ToListAsync();
 
         methodSw.Stop();
         LogMethodSummary(nameof(CartesianExplosion), methodSw);
@@ -591,18 +537,18 @@ var orders = _db.Orders
             Category = "Query Shape",
             PainPoint = pain,
             Solution = solution,
-            SampleData = sample
         };
     }
 
     // ─── 6. Count() vs Any() ─────────────────────────────────────────────
     public async Task<ComparisonViewModel> CountVsAny(bool skipBenchmark = false, bool onlyPain = false, bool onlySolution = false)
     {
-        _counter.Reset();
         var methodSw = Stopwatch.StartNew();
 
         using var db1 = factory.CreateDbContext();
         int total = await db1.Orders.CountAsync();
+        _counter.Reset();
+
 
         long badMs = 0, badMem = 0, goodMs = 0, goodMem = 0;
 
@@ -664,12 +610,7 @@ if (_db.Orders.Any()) { ... }",
             SolutionExplanation = "SQL stops at the first matching row. Very fast."
         };
 
-        using var dbSample = factory.CreateDbContext();
-        var sample = await dbSample.Orders
-            .AsNoTracking()
-            .Take(10)
-            .Select(o => new OrderDto { OrderId = o.Id, Total = o.Total, Status = o.Status, OrderDate = o.OrderDate })
-            .ToListAsync();
+        //using var dbSample = factory.CreateDbContext();
 
         methodSw.Stop();
         LogMethodSummary(nameof(CountVsAny), methodSw);
@@ -680,7 +621,6 @@ if (_db.Orders.Any()) { ... }",
             Category = "Existence Check",
             PainPoint = pain,
             Solution = solution,
-            SampleData = sample
         };
     }
 
@@ -765,17 +705,6 @@ _db.Orders
         };
 
         using var dbSample = factory.CreateDbContext();
-        var sample = await dbSample.Orders
-            .AsNoTracking()
-            .Take(10)
-            .Select(o => new OrderDto
-            {
-                OrderId = o.Id,
-                Total = o.Total,
-                CustomerName = o.Customer.Name,
-                OrderDate = o.OrderDate,
-                Status = o.Status
-            }).ToListAsync();
 
         methodSw.Stop();
         LogMethodSummary(nameof(CustomQuery), methodSw);
@@ -786,7 +715,6 @@ _db.Orders
             Category = "Query Optimization",
             PainPoint = pain,
             Solution = solution,
-            SampleData = sample
         };
     }
 }
