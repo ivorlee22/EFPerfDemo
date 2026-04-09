@@ -141,7 +141,7 @@ var dtos = orders.Select(o => new OrderDto
             MemoryBytes = goodMem,
             IsPainPoint = false,
             SqlGenerated = @"SELECT o.*, c.Name FROM Orders o 
-INNER JOIN Customers c ON c.Id = o.CustomerId",
+LEFT JOIN Customers c ON c.Id = o.CustomerId",
             CodeSnippet = @"
 var orders = _db.Orders
     .Include(o => o.Customer)
@@ -237,7 +237,7 @@ var orders = _db.Orders
             RecordCount = total,
             MemoryBytes = badMem,
             IsPainPoint = true,
-            SqlGenerated = "SELECT o.*, c.* FROM Orders o INNER JOIN Customers c ...",
+            SqlGenerated = "SELECT o.*, c.* FROM Orders o LEFT JOIN Customers c ...",
             CodeSnippet = @"
 var orders = _db.Orders.Include(o => o.Customer).ToList();",
             PainPointExplanation = "Loads all columns from both tables + change tracking overhead.",
@@ -535,7 +535,7 @@ var orders = _db.Orders
             MemoryBytes = badMem,
             IsPainPoint = true,
             SqlGenerated = @"SELECT o.*, c.*, i.* FROM Orders o 
-INNER JOIN ... -- Cartesian product!",
+LEFT JOIN ... -- Cartesian product!",
             CodeSnippet = @"
 var orders = _db.Orders
     .Include(o => o.Customer)
