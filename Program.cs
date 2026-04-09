@@ -8,21 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// Use InMemory for demo (no SQL Server needed to run)
-// To switch to SQL Server, replace with:
-// builder.Services.AddDbContextFactory<AppDbContext>(opt =>
-//     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
-
-builder.Services.AddDbContextFactory<AppDbContext>(opt =>
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("Default"))
-       .EnableSensitiveDataLogging()
-       .LogTo(Console.WriteLine, LogLevel.Information)); 
-builder.Services.AddScoped<BenchmarkService>();
-
-// 👉 Register Query Counter
+//  Register Query Counter
 builder.Services.AddSingleton<QueryCountInterceptor>();
 
-// 👉 DbContextFactory + SQL Server + Interceptor
+//  DbContextFactory + SQL Server + Interceptor
 builder.Services.AddDbContextFactory<AppDbContext>((sp, opt) =>
 {
     var interceptor = sp.GetRequiredService<QueryCountInterceptor>();
@@ -30,7 +19,6 @@ builder.Services.AddDbContextFactory<AppDbContext>((sp, opt) =>
     opt.UseSqlServer(
             builder.Configuration.GetConnectionString("Default"))
        .EnableSensitiveDataLogging()
-       .LogTo(Console.WriteLine, LogLevel.Information)
        .AddInterceptors(interceptor); 
 });
 

@@ -185,7 +185,7 @@ var orders = _db.Orders
                 badMem = MeasureMemory(() =>
                 {
                     using var db = factory.CreateDbContext();
-                    var _ = db.Orders.Include(o => o.Customer).ToList();
+                    var _ = db.Orders.ToList();
                 });
                 sw.Stop();
                 badMs = sw.ElapsedMilliseconds;
@@ -203,7 +203,6 @@ var orders = _db.Orders
                         {
                             OrderId = o.Id,
                             Total = o.Total,
-                            CustomerName = o.Customer.Name,
                         }).ToList();
                 });
                 sw.Stop();
@@ -241,7 +240,6 @@ var orders = _db.Orders
     .Select(o => new OrderDto { 
           OrderId = o.Id,
           Total = o.Total,
-          CustomerName = o.Customer.Name,
     })
     .ToList();",
             SolutionExplanation = "EF translates projection into lean SQL with only needed columns + no tracking."
@@ -281,8 +279,7 @@ var orders = _db.Orders
                 badMem = MeasureMemory(() =>
                 {
                     using var db = factory.CreateDbContext();
-                    var _ = db.Orders.AsNoTracking()
-                        .Select(o => new OrderDto { OrderId = o.Id, Total = o.Total, Status = o.Status })
+                    var _ = db.Orders
                         .ToList();
                 });
                 sw.Stop();
@@ -316,7 +313,7 @@ var orders = _db.Orders
             RecordCount = total,
             MemoryBytes = badMem,
             IsPainPoint = true,
-            SqlGenerated = "SELECT ... FROM Orders -- returns ALL rows",
+            SqlGenerated = "SELECT * FROM Orders -- returns ALL rows",
             CodeSnippet = @"
 var allOrders = _db.Orders.AsNoTracking().ToList();",
             PainPointExplanation = $"Loads all {total} records into memory — dangerous when table grows.",
