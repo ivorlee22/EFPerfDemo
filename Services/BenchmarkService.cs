@@ -121,7 +121,7 @@ public class BenchmarkService(
             MemoryBytes = badMem,
             IsPainPoint = true,
             SqlGenerated = "SELECT * FROM Orders\n-- then for EACH order:\nSELECT * FROM Customers WHERE Id = @p0",
-            CodeSnippet = @"// ❌ PAIN POINT — N+1 Queries
+            CodeSnippet = @"
 var orders = _db.Orders.ToList();
 var dtos = orders.Select(o => new OrderDto 
 { 
@@ -142,7 +142,7 @@ var dtos = orders.Select(o => new OrderDto
             IsPainPoint = false,
             SqlGenerated = @"SELECT o.*, c.Name FROM Orders o 
 INNER JOIN Customers c ON c.Id = o.CustomerId",
-            CodeSnippet = @"// ✅ SOLUTION — Single query with JOIN
+            CodeSnippet = @"
 var orders = _db.Orders
     .Include(o => o.Customer)
     .AsNoTracking()
@@ -238,7 +238,7 @@ var orders = _db.Orders
             MemoryBytes = badMem,
             IsPainPoint = true,
             SqlGenerated = "SELECT o.*, c.* FROM Orders o INNER JOIN Customers c ...",
-            CodeSnippet = @"// ❌ PAIN POINT
+            CodeSnippet = @"
 var orders = _db.Orders.Include(o => o.Customer).ToList();",
             PainPointExplanation = "Loads all columns from both tables + change tracking overhead.",
             SolutionExplanation = "Use .Select() projection to fetch only needed columns."
@@ -253,7 +253,7 @@ var orders = _db.Orders.Include(o => o.Customer).ToList();",
             MemoryBytes = goodMem,
             IsPainPoint = false,
             SqlGenerated = "SELECT only required columns ...",
-            CodeSnippet = @"// ✅ SOLUTION
+            CodeSnippet = @"
 var orders = _db.Orders
     .AsNoTracking()
     .Select(o => new OrderDto { ... })
@@ -343,7 +343,7 @@ var orders = _db.Orders
             MemoryBytes = badMem,
             IsPainPoint = true,
             SqlGenerated = "SELECT ... FROM Orders -- returns ALL rows",
-            CodeSnippet = @"// ❌ PAIN POINT
+            CodeSnippet = @"
 var allOrders = _db.Orders.AsNoTracking().ToList();",
             PainPointExplanation = $"Loads all {total} records into memory — dangerous when table grows.",
             SolutionExplanation = "Use Skip() + Take() for true pagination."
@@ -358,7 +358,7 @@ var allOrders = _db.Orders.AsNoTracking().ToList();",
             MemoryBytes = goodMem,
             IsPainPoint = false,
             SqlGenerated = "SELECT ... OFFSET ... FETCH NEXT 10 ROWS ONLY",
-            CodeSnippet = @"// ✅ SOLUTION
+            CodeSnippet = @"
 var orders = _db.Orders
     .AsNoTracking()
     .OrderBy(o => o.Id)
@@ -436,7 +436,7 @@ var orders = _db.Orders
             MemoryBytes = badMem,
             IsPainPoint = true,
             SqlGenerated = "SELECT ... -- entities stored in ChangeTracker",
-            CodeSnippet = @"// ❌ PAIN POINT
+            CodeSnippet = @"
 var orders = _db.Orders.Include(o => o.Customer).ToList();",
             PainPointExplanation = "ChangeTracker stores snapshot of every entity → extra memory & CPU for read-only operations.",
             SolutionExplanation = "Use AsNoTracking() for read-only queries."
@@ -451,7 +451,7 @@ var orders = _db.Orders.Include(o => o.Customer).ToList();",
             MemoryBytes = goodMem,
             IsPainPoint = false,
             SqlGenerated = "SELECT ... -- no tracking",
-            CodeSnippet = @"// ✅ SOLUTION
+            CodeSnippet = @"
 var orders = _db.Orders
     .Include(o => o.Customer)
     .AsNoTracking()
@@ -536,7 +536,7 @@ var orders = _db.Orders
             IsPainPoint = true,
             SqlGenerated = @"SELECT o.*, c.*, i.* FROM Orders o 
 INNER JOIN ... -- Cartesian product!",
-            CodeSnippet = @"// ❌ PAIN POINT
+            CodeSnippet = @"
 var orders = _db.Orders
     .Include(o => o.Customer)
     .Include(o => o.Items)
@@ -555,8 +555,7 @@ var orders = _db.Orders
             IsPainPoint = false,
             SqlGenerated = @"-- Query 1: orders + customer
 -- Query 2: items (IN clause)",
-            CodeSnippet = @"// ✅ SOLUTION
-var orders = _db.Orders
+            CodeSnippet = @"
     .Include(o => o.Customer)
     .Include(o => o.Items)
     .AsSplitQuery()
@@ -643,7 +642,7 @@ var orders = _db.Orders
             MemoryBytes = badMem,
             IsPainPoint = true,
             SqlGenerated = "SELECT all rows just to check Count",
-            CodeSnippet = @"// ❌ PAIN POINT
+            CodeSnippet = @"
 var orders = _db.Orders.ToList();
 if (orders.Count > 0) ...",
             PainPointExplanation = "Loads all rows (or full scan) just to check existence.",
@@ -659,7 +658,7 @@ if (orders.Count > 0) ...",
             MemoryBytes = goodMem,
             IsPainPoint = false,
             SqlGenerated = "SELECT CASE WHEN EXISTS (...)",
-            CodeSnippet = @"// ✅ SOLUTION
+            CodeSnippet = @"
 if (_db.Orders.Any()) { ... }",
             SolutionExplanation = "SQL stops at the first matching row. Very fast."
         };
