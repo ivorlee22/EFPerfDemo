@@ -20,7 +20,7 @@ public static class DbSeeder
 
         var rng = new Random(42);
 
-        var customers = Enumerable.Range(1, 3000).Select(i => new Customer
+        var customers = Enumerable.Range(1, 5000).Select(i => new Customer
         {
             Name  = $"Customer {i:D3}",
             Email = $"customer{i}@example.com",
@@ -33,7 +33,7 @@ public static class DbSeeder
         var orders = new List<Order>();
         foreach (var c in customers)
         {
-            int orderCount = rng.Next(1, 10);
+            int orderCount = rng.Next(1, 20);
             for (int j = 0; j < orderCount; j++)
             {
                 var order = new Order

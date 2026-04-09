@@ -1012,6 +1012,98 @@ a {
         background: var(--acc-bg);
     }
 
+.run-section {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+/* Group */
+.run-btn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Button base */
+.run-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+    /* Hover effect */
+    .run-btn:hover {
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+    }
+
+    /* Click effect */
+    .run-btn:active {
+        transform: scale(0.95);
+    }
+
+/* 🎯 Specific styles */
+.run-btn--pain {
+    background: linear-gradient(135deg, #ff4d4f, #b71c1c);
+}
+
+.run-btn--solution {
+    background: linear-gradient(135deg, #00c853, #2e7d32);
+}
+
+.run-btn--reset {
+    background: linear-gradient(135deg, #607d8b, #37474f);
+}
+
+/* Label */
+.run-label {
+    text-align: center;
+}
+
+.run-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.bad-text {
+    color: #ff4d4f;
+}
+
+.good-text {
+    color: #00c853;
+}
+
+.run-status {
+    font-size: 12px;
+    color: #888;
+}
+
+/* ✨ Loading animation */
+.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* ── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
     .main-content {
