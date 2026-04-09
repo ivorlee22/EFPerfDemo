@@ -219,9 +219,6 @@ var orders = _db.Orders
                             OrderId = o.Id,
                             Total = o.Total,
                             CustomerName = o.Customer.Name,
-                            CustomerCity = o.Customer.City,
-                            OrderDate = o.OrderDate,
-                            Status = o.Status
                         }).ToList();
                 });
                 sw.Stop();
@@ -256,7 +253,11 @@ var orders = _db.Orders.Include(o => o.Customer).ToList();",
             CodeSnippet = @"
 var orders = _db.Orders
     .AsNoTracking()
-    .Select(o => new OrderDto { ... })
+    .Select(o => new OrderDto { 
+          OrderId = o.Id,
+          Total = o.Total,
+          CustomerName = o.Customer.Name,
+    })
     .ToList();",
             SolutionExplanation = "EF translates projection into lean SQL with only needed columns + no tracking."
         };
