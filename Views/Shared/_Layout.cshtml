@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] — EF Core Perf</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+        <span class="brand-dot"></span>EF Core Perf
+    </a>
+    <div class="nav-links">
+        <a asp-controller="Orders" asp-action="NplusOne">N+1</a>
+        <a asp-controller="Orders" asp-action="SelectStar">Projection</a>
+        <a asp-controller="Orders" asp-action="Pagination">Pagination</a>
+        <a asp-controller="Orders" asp-action="Tracking">Tracking</a>
+        <a asp-controller="Orders" asp-action="CartesianExplosion">Cartesian</a>
+        <a asp-controller="Orders" asp-action="CountVsAny">Any()</a>
+    </div>
+</nav>
+
+<main class="main-content">
+    @RenderBody()
+</main>
+
+<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

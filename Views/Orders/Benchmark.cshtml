@@ -1,0 +1,245 @@
+@model EFPerfDemo.Models.ComparisonViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    double speedup = Model.Solution.ElapsedMs > 0
+        ? Math.Round((double)Model.PainPoint.ElapsedMs / Model.Solution.ElapsedMs, 1)
+        : 1;
+    double memorySaving = Model.PainPoint.MemoryBytes > 0 && Model.Solution.MemoryBytes > 0
+        ? Math.Round((1 - (double)Model.Solution.MemoryBytes / Model.PainPoint.MemoryBytes) * 100, 0)
+        : 0;
+}
+
+<div class="bench-page">
+
+    <!-- Data Description Banner -->
+    <div class="data-description">
+        <i class="fa-solid fa-database"></i>
+        This system runs with <strong>1,000</strong> customer records, <strong>5,008</strong> order records, and <strong>25,035</strong> order item records.
+    </div>
+
+    <!-- Header -->
+    <div class="bench-header">
+        <div class="back-link">
+            <a asp-controller="Home" asp-action="Index">
+                <i class="fa-solid fa-arrow-left"></i> All Scenarios
+            </a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-cat">
+                <i class="fa-solid fa-layer-group"></i>
+                @Model.Category
+            </span>
+        </div>
+        <h1 class="bench-title">@Model.Title</h1>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-row">
+        <div class="kpi bad">
+            <div class="kpi-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+            <span id="painQuery" class="kpi-val">@Model.PainPoint.QueryCount</span>
+            <span class="kpi-lbl">Pain Queries</span>
+        </div>
+        <div class="kpi bad">
+            <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+            <span id="painTime" class="kpi-val">@Model.PainPoint.ElapsedMs<small>ms</small></span>
+            <span class="kpi-lbl">Pain Time</span>
+        </div>
+        <div class="kpi accent">
+            <div class="kpi-icon"><i class="fa-solid fa-bolt"></i></div>
+            <span id="speedup" class="kpi-val">@(speedup)<small>×</small></span>
+            <span class="kpi-lbl">Speedup</span>
+        </div>
+        <div class="kpi good">
+            <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <span id="solutionQuery" class="kpi-val">@Model.Solution.QueryCount</span>
+            <span class="kpi-lbl">Solution Queries</span>
+        </div>
+        <div class="kpi good">
+            <div class="kpi-icon"><i class="fa-solid fa-gauge-high"></i></div>
+            <span id="solutionTime" class="kpi-val">@Model.Solution.ElapsedMs<small>ms</small></span>
+            <span class="kpi-lbl">Solution Time</span>
+        </div>
+
+        @if (memorySaving > 0)
+        {
+            <div class="kpi good">
+                <div class="kpi-icon"><i class="fa-solid fa-memory"></i></div>
+                <span id="memorySaving" class="kpi-val">@memorySaving<small>%</small></span>
+                <span class="kpi-lbl">Less Memory</span>
+            </div>
+        }
+    </div>
+
+    <!-- Run Button -->
+    <div class="run-section">
+        <button id="runBtn" class="run-btn" title="Run Benchmark">
+            <i class="fa-solid fa-play" id="runIcon"></i>
+        </button>
+        <div class="run-label">
+            <span class="run-title">Run Benchmark</span>
+            <span id="status" class="run-status"></span>
+        </div>
+    </div>
+
+    <input type="hidden" id="scenario" value="@ViewContext.RouteData.Values["action"]" />
+
+    <!-- Code Compare -->
+    <div class="compare-grid">
+
+        <!-- Pain Point -->
+        <div class="compare-panel pain">
+            <div class="cp-header">
+                <span class="badge bad"><i class="fa-solid fa-skull-crossbones"></i> PAIN POINT</span>
+                <span class="cp-name">@Model.PainPoint.ScenarioName</span>
+            </div>
+            <pre class="code-block"><code>@Model.PainPoint.CodeSnippet</code></pre>
+            <div class="cp-explain">
+                <i class="fa-solid fa-triangle-exclamation cp-explain-icon bad-text"></i>
+                @Model.PainPoint.PainPointExplanation
+            </div>
+            <div class="sql-label"><i class="fa-solid fa-terminal"></i> Generated SQL</div>
+            <pre class="sql-block"><code>@Model.PainPoint.SqlGenerated</code></pre>
+
+            @if (Model.PainPoint.QuerySteps.Any())
+            {
+                <div class="query-steps">
+                    <div class="qs-title"><i class="fa-solid fa-stopwatch"></i> Query Breakdown</div>
+                    @foreach (var (step, i) in Model.PainPoint.QuerySteps.Select((s, i) => (s, i)))
+                    {
+                        <div class="qs-row">
+                            <div class="qs-label">
+                                <span class="qs-num">@(i + 1)</span>
+                                @step.Label
+                            </div>
+                            <pre class="qs-sql"><code>@step.Sql</code></pre>
+                            <div class="qs-meta">
+                                <span class="qs-time bad">
+                                    <i class="fa-solid fa-clock"></i> @step.ElapsedMs ms
+                                </span>
+                                <span class="qs-rows">
+                                    <i class="fa-solid fa-table-rows"></i> @step.RowCount rows
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Solution -->
+        <div class="compare-panel solution">
+            <div class="cp-header">
+                <span class="badge good"><i class="fa-solid fa-wand-magic-sparkles"></i> SOLUTION</span>
+                <span class="cp-name">@Model.Solution.ScenarioName</span>
+            </div>
+            <pre class="code-block"><code>@Model.Solution.CodeSnippet</code></pre>
+            <div class="cp-explain">
+                <i class="fa-solid fa-circle-info cp-explain-icon good-text"></i>
+                @Model.Solution.SolutionExplanation
+            </div>
+            <div class="sql-label"><i class="fa-solid fa-terminal"></i> Generated SQL</div>
+            <pre class="sql-block"><code>@Model.Solution.SqlGenerated</code></pre>
+        </div>
+
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-section">
+        <div class="section-label"><i class="fa-solid fa-chart-gantt"></i> Execution Time Comparison</div>
+
+        <div class="tl-row">
+            <span class="tl-tag bad"><i class="fa-solid fa-bug"></i> PAIN</span>
+            <div class="tl-track">
+                <div id="painBar" class="tl-fill bad" style="width: 100%">
+                    <i class="fa-solid fa-hourglass-end"></i>
+                    @Model.PainPoint.ElapsedMs ms &mdash; @Model.PainPoint.QueryCount queries
+                </div>
+            </div>
+        </div>
+
+        <div class="tl-row">
+            <span class="tl-tag good"><i class="fa-solid fa-rocket"></i> FIX</span>
+            <div class="tl-track">
+                @{
+                    double pct = Model.PainPoint.ElapsedMs > 0
+                        ? Math.Max(3, Math.Round((double)Model.Solution.ElapsedMs / Model.PainPoint.ElapsedMs * 100, 0))
+                        : 100;
+                }
+                <div id="solutionBar" class="tl-fill good" style="width: @pct%">
+                    <i class="fa-solid fa-check"></i>
+                    @Model.Solution.ElapsedMs ms &mdash; @Model.Solution.QueryCount queries
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const runBtn   = document.getElementById("runBtn");
+    const runIcon  = document.getElementById("runIcon");
+    const status   = document.getElementById("status");
+    const scenario = document.getElementById("scenario").value;
+
+    async function runStep(step) {
+        const res = await fetch('/Orders/RunStep', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scenario, step })
+        });
+        return res.json();
+    }
+
+    runBtn.addEventListener("click", async () => {
+        runBtn.disabled = true;
+        runBtn.classList.add("running");
+        runIcon.className = "fa-solid fa-spinner fa-spin";
+        status.innerHTML  = '<i class="fa-solid fa-circle-notch fa-spin"></i> Running…';
+        status.className  = "run-status";
+
+        try {
+            // STEP 1: Pain Point
+            status.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Measuring pain point…';
+            const pain = await runStep("pain");
+
+            document.getElementById("painTime").innerHTML  = pain.elapsedMs + "<small>ms</small>";
+            document.getElementById("painQuery").innerText = pain.queryCount;
+
+            // STEP 2: Solution
+            status.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Measuring solution…';
+            const sol = await runStep("solution");
+
+            document.getElementById("solutionTime").innerHTML  = sol.elapsedMs + "<small>ms</small>";
+            document.getElementById("solutionQuery").innerText = sol.queryCount;
+
+            // Speedup & Memory
+            const sp  = (pain.elapsedMs / sol.elapsedMs).toFixed(1);
+            const mem = pain.memoryBytes > 0
+                ? Math.round((1 - sol.memoryBytes / pain.memoryBytes) * 100)
+                : 0;
+
+            document.getElementById("speedup").innerHTML = sp + "<small>×</small>";
+            if (document.getElementById("memorySaving")) {
+                document.getElementById("memorySaving").innerHTML = mem + "<small>%</small>";
+            }
+
+            // Timeline
+            const tPct = Math.max(3, (sol.elapsedMs / pain.elapsedMs) * 100);
+            document.getElementById("solutionBar").style.width = tPct + "%";
+            document.getElementById("painBar").innerHTML     = `<i class="fa-solid fa-hourglass-end"></i> ${pain.elapsedMs} ms — ${pain.queryCount} queries`;
+            document.getElementById("solutionBar").innerHTML = `<i class="fa-solid fa-check"></i> ${sol.elapsedMs} ms — ${sol.queryCount} queries`;
+
+            status.innerHTML = '<i class="fa-solid fa-circle-check"></i> Done!';
+            status.className = "run-status success";
+
+        } catch (err) {
+            console.error(err);
+            status.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Error';
+            status.className = "run-status error";
+        }
+
+        runBtn.classList.remove("running");
+        runIcon.className = "fa-solid fa-rotate-right";
+        runBtn.disabled   = false;
+    });
+</script>

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "EFPerfDemo": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:57215;http://localhost:57216"
+    }
+  }
+}

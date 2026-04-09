@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "EF Core Performance";
+    var scenarios = new[]
+    {
+        new { Action="NplusOne",          Icon="fas fa-bolt",        Title="N+1 Query Problem",      Desc="Lazy-loading navigation props fires 1 query per row",          Category="Query Loading",   Bad="101+ queries",  Good="1 JOIN query"  },
+        new { Action="SelectStar",         Icon="fas fa-box",         Title="Select * vs Projection",  Desc="Loading full entities vs projecting only needed columns",       Category="Data Transfer",   Bad="All columns",   Good="Exact columns" },
+        new { Action="Pagination",         Icon="fas fa-file",        Title="Missing Pagination",      Desc="Fetching all rows vs Skip/Take with page size",                Category="Data Volume",     Bad="All rows",      Good="10 rows/page"  },
+        new { Action="Tracking",           Icon="fas fa-magnifying-glass", Title="Tracking vs NoTracking",  Desc="ChangeTracker overhead on read-only screens",                  Category="Memory & CPU",    Bad="Full snapshot", Good="No overhead"   },
+        new { Action="CartesianExplosion", Icon="fas fa-explosion",   Title="Cartesian Explosion",     Desc="Multiple collection Includes multiply result-set rows",         Category="Query Shape",     Bad="N×M rows",      Good="Split queries" },
+        new { Action="CountVsAny",         Icon="fas fa-bullseye",    Title="Count() > 0  vs  Any()", Desc="Full table scan to check existence vs EXISTS short-circuit",    Category="Existence Check", Bad="Full scan",     Good="SELECT TOP 1"  },
+        new { Action="CustomQuery",        Icon="fas fa-code",        Title="Custom Optimized Query",  Desc="Writing tailored SQL or efficient LINQ instead of generic fetches", Category="Custom Query",    Bad="Generic fetch", Good="Hand‑crafted query" }
+    };
+}
+
+<div class="hero">
+    <h1 class="hero-title">EF Core Query<br/>Performance Guide</h1>
+    <p class="hero-sub">Interactive demos of the 6 most common Entity Framework performance anti-patterns — with before/after benchmarks, SQL diffs, and code fixes.</p>
+    <div class="hero-meta">
+        <span class="pill">ASP.NET Core MVC</span>
+        <span class="pill">EF Core 10</span>
+        <span class="pill">.NET 10</span>
+        <span class="pill">InMemory DB</span>
+    </div>
+</div>
+
+<div class="scenario-grid">
+    @foreach (var s in scenarios)
+    {
+        <a asp-controller="Orders" asp-action="@s.Action" class="scenario-card">
+            <div class="sc-header">
+                <i class="sc-icon @s.Icon"></i>
+                <span class="sc-category">@s.Category</span>
+            </div>
+            <h3 class="sc-title">@s.Title</h3>
+            <p class="sc-desc">@s.Desc</p>
+            <div class="sc-metrics">
+                <div class="sc-metric bad"><span>PAIN</span>@s.Bad</div>
+                <div class="sc-metric good"><span>FIX</span>@s.Good</div>
+            </div>
+        </a>
+    }
+</div>
